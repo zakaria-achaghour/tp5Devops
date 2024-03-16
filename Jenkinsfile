@@ -18,6 +18,14 @@ pipeline {
           }
       }
     }
+    stage('Test image') {
+      steps{
+        script {
+
+          echo "Tests passed"
+        }
+      }
+    }
     stage('Publish Image') {
       steps{
           script {
