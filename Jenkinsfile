@@ -1,31 +1,31 @@
-pipeline {
-  agent { label 'linux' }
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '5'))
-  }
+pipeline {  
   environment {
-    DOCKERHUB_CREDENTIALS = credentials('zakariaachaghour_DOCKER_HUB')
+      registry = "zakariaachaghour/tp5devops"
+      registryCredential = 'zakariaachaghour_DOCKER_HUB'
+      dockerImage = ''
   }
+  agent any
   stages {
-    stage('Build') {
+    stage('Cloning Git') {
       steps {
-        sh 'docker build -t zakariaachaghour/tp5:latest .'
+          git 'https://github.com/zakaria-achaghour/tp5Devops.git'
       }
     }
-    stage('Login') {
-      steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+    stage('Building image') {
+      steps{
+          script {
+              dockerImage = docker.build registry + ":$BUILD_NUMBER"
+          }
       }
     }
-    stage('Push') {
-      steps {
-        sh 'docker push zakariaachaghour/tp5:latest'
+    stage('Publish Image') {
+      steps{
+          script {
+              docker.withRegistry( '', registryCredential ) {
+              dockerImage.push()
+              }
+          }
       }
-    }
-  }
-  post {
-    always {
-      sh 'docker logout'
     }
   }
 }
